@@ -1,5 +1,6 @@
 var mysql = require('mysql');
 var inquirer = require('inquirer');
+var colors = require('colors');
 require('console.table');
 
 var connection = mysql.createConnection({
@@ -9,6 +10,11 @@ var connection = mysql.createConnection({
     password: "viviana13",
     database: "bamazon"
 });
+colors.setTheme({
+    custom: ['rainbow', 'underline']
+  });
+
+ 
 
 connection.connect(function(err) {
     if (err) throw err;
@@ -49,13 +55,35 @@ var selectItem = function(inventory) {
 
 var selectQuantity = function(product) {
  // Inquirer prompt asking user for quantity desired
+ inquirer.prompt([{
+    type: 'input',
+    name: 'itemChoice',
+    message: 'What is the ID of the item you would like to purchase? [Quit with Q]',
+
  // Validate to make sure user enters a number or a Q
- // Check if user wants to exit
- // Check if quantity desired exceeds quantity available 
-    // var quantity = parseInt(val.itemQuantity) if (quantity > product.stock_quantity)
- // If quantity is available, run the makePurchase function
- // If quantity is not available, console.log a message stating that
+ validate: function(val) {
+    return !isNaN(val) || val.toLowerCase() === "q"
 }
+}]).then(function(val) {
+ // Check if user wants to exit
+ userExit(val.itemChoice);
+
+ // Check if quantity desired exceeds quantity available 
+
+if (quantity <= productData.stock_quantity) {
+    console.log('Congratulations, the product you requested is in stock! Placing order!');
+
+
+}
+ // var quantity = parseInt(val.itemQuantity) if (quantity > product.stock_quantity)
+ var choiceId = parseInt(val.itemChoice);
+ var product = checkInventory(choiceId, inventory);
+
+ // If quantity is available, run the makePurchase function
+ 
+ // If quantity is not available, console.log a message stating that
+
+});
 
 var makePurchase = function() {
     // Connect to mysql 
@@ -84,4 +112,5 @@ var userExit = function(choice) {
     }
 }
 
-    
+
+}
