@@ -12,33 +12,33 @@ var connection = mysql.createConnection({
 });
 colors.setTheme({
     custom: ['rainbow', 'underline']
-  });
+});
 
- 
 
-connection.connect(function(err) {
+
+connection.connect(function (err) {
     if (err) throw err;
     console.log("Connection successful!");
     console.log("");
     makeTable();
 });
 
-var makeTable = function() {
-    connection.query("SELECT * FROM products", function(err, res) {
-        console.table(res);        
+var makeTable = function () {
+    connection.query("SELECT * FROM products", function (err, res) {
+        console.table(res);
         selectItem(res);
     })
 };
 
-var selectItem = function(inventory) {
+var selectItem = function (inventory) {
     inquirer.prompt([{
         type: 'input',
         name: 'itemChoice',
         message: 'What is the ID of the item you would like to purchase? [Quit with Q]',
-        validate: function(val) {
+        validate: function (val) {
             return !isNaN(val) || val.toLowerCase() === "q"
         }
-    }]).then(function(val) {
+    }]).then(function (val) {
         // Check if user wants to exit
         userExit(val.itemChoice);
 
@@ -53,64 +53,62 @@ var selectItem = function(inventory) {
     })
 }
 
-var selectQuantity = function(product) {
- // Inquirer prompt asking user for quantity desired
- inquirer.prompt([{
-    type: 'input',
-    name: 'itemChoice',
-    message: 'What is the ID of the item you would like to purchase? [Quit with Q]',
+var selectQuantity = function (product) {
+    // Inquirer prompt asking user for quantity desired
+    // console.log('line 58', product);
+    // console.log(product);
+    inquirer.prompt([{
+        type: 'input',
+        name: 'itemQuantity',
+        message: 'What is the quantity of the item you would like to purchase? [Quit with Q]',
 
- // Validate to make sure user enters a number or a Q
- validate: function(val) {
-    return !isNaN(val) || val.toLowerCase() === "q"
-}
-}]).then(function(val) {
- // Check if user wants to exit
- userExit(val.itemChoice);
+        // Validate to make sure user enters a number or a Q
+        validate: function (val) {
+            return !isNaN(val) || val.toLowerCase() === "q"
+        }
+    }]).then(function (val) {
+        // Check if user wants to exit
+        userExit(val.itemQuantity);
 
- // Check if quantity desired exceeds quantity available 
+        // Check if quantity desired exceeds quantity available 
+        if (val.itemQuantity <= product.stock_quantity) {
+            console.log('Congratulations, the product you requested is in stock! Placing order!');
 
-if (quantity <= productData.stock_quantity) {
-    console.log('Congratulations, the product you requested is in stock! Placing order!');
+        }
+        // var quantity = parseInt(val.itemQuantity) if (quantity > product.stock_quantity)
+        var choiceId = parseInt(val.itemQuantity);
+        // var product = checkInventory(choiceId, inventory);
 
+        // If quantity is available, run the makePurchase function
 
-}
- // var quantity = parseInt(val.itemQuantity) if (quantity > product.stock_quantity)
- var choiceId = parseInt(val.itemChoice);
- var product = checkInventory(choiceId, inventory);
+        // If quantity is not available, console.log a message stating that
 
- // If quantity is available, run the makePurchase function
- 
- // If quantity is not available, console.log a message stating that
+    }).catch(err => console.log(err));
+};
 
-});
-
-var makePurchase = function() {
+var makePurchase = function () {
     // Connect to mysql 
-    connection.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?", [quantity, product.item_id], 
-    function(err, res) {
-        console.log("Congratulations.  Your purchase was successful");
-        makeTable();
-    })
+    connection.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE item_id = ?", [quantity, product.item_id],
+        function (err, res) {
+            console.log("Congratulations.  Your purchase was successful");
+            makeTable();
+        })
 }
 
-var checkInventory = function(choiceId, inventory) {
+var checkInventory = function (choiceId, inventory) {
     for (let i = 0; i < inventory.length; i++) {
         if (inventory[i].item_id === choiceId) {
             return inventory[i];
-        }        
+        }
     }
     return null;
 }
 
-var userExit = function(choice) {
+var userExit = function (choice) {
     if (choice.toLowerCase() === "q") {
         console.log("")
         console.log("Goodbye!");
         console.log("");
         process.exit(0)
     }
-}
-
-
 }
